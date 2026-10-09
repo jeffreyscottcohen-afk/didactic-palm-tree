@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matter Launch Case Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a lab notebook on graph paper. Sticky day-by-day nav on the left (chips on phones), one section of the packet at a time on the right. */
+:root {
+  --paper: #F4F7FA;
+  --grid: #E1E8F0;
+  --surface: #FFFFFF;
+  --ink: #13213A;
+  --muted: #56647C;
+  --line: #C8D3E0;
+  --accent: #0B7480;
+  --accent-soft: #DDF1F2;
+  --phys: #0B7480;
+  --chem: #B4235A;
+  --chem-soft: #FBE3EC;
+  --hi: #FFE48A;
+  --ok: #2B8A3E;
+  --warn: #B35C00;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Lexend", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1520; --grid: #172234; --surface: #152031; --ink: #E5ECF5; --muted: #9CAAC0;
+    --line: #2A3A52; --accent: #4CC3CC; --accent-soft: #123A40; --phys: #4CC3CC; --chem: #F27AA6;
+    --chem-soft: #3E1A2A; --hi: #6B5A12; --ok: #69C47F; --warn: #F0A050; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1520; --grid: #172234; --surface: #152031; --ink: #E5ECF5; --muted: #9CAAC0;
+  --line: #2A3A52; --accent: #4CC3CC; --accent-soft: #123A40; --phys: #4CC3CC; --chem: #F27AA6;
+  --chem-soft: #3E1A2A; --hi: #6B5A12; --ok: #69C47F; --warn: #F0A050; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.9rem, 4vw, 2.7rem); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; cursor: pointer; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 64px; }
+.app { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
+
+/* Masthead */
+.mast { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; padding-block: 8px 20px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.idcard { display: flex; flex-wrap: wrap; gap: 10px; }
+.idcard label { display: flex; flex-direction: column; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.idcard input, .idcard select { font: 500 0.95rem var(--font-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 6px; padding: 6px 10px; min-width: 0; }
+.idcard .nm { width: 13rem; max-width: 100%; }
+.idcard .tr { width: 5rem; }
+
+/* Element tile */
+.tile { position: relative; flex: none; width: 64px; height: 64px; border: 2px solid var(--ink); border-radius: 4px; background: var(--surface); display: grid; place-items: center; }
+.tile .n { position: absolute; top: 3px; left: 5px; font: 700 0.62rem var(--font-mono); }
+.tile .s { font: 800 1.6rem/1 var(--font-display); }
+.tile .w { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font: 500 0.5rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; }
+
+/* Nav */
+nav.side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+.navday { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 10px 8px 4px; }
+.navday:first-child { padding-top: 2px; }
+nav.side a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); padding: 6px 8px; border-radius: 6px; font-size: 0.92rem; }
+nav.side a:hover { background: var(--accent-soft); }
+nav.side a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.dot { flex: none; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); }
+.dot.some { border-color: var(--accent); background: linear-gradient(90deg, var(--accent) 50%, transparent 50%); }
+.dot.done { border-color: var(--accent); background: var(--accent); }
+nav.side a[aria-current="page"] .dot { border-color: var(--paper); }
+.progress { margin: 4px 8px 10px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.bar { height: 6px; background: var(--grid); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+
+/* Page */
+main { min-width: 0; }
+.sheet { background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: clamp(18px, 3vw, 36px); display: flex; flex-direction: column; gap: 22px; }
+.sheet > header { display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; border-bottom: 2px dashed var(--line); }
+.lede { color: var(--muted); max-width: 65ch; }
+.prose { display: flex; flex-direction: column; gap: 12px; max-width: 68ch; }
+.pager { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 8px 16px; font-weight: 600; text-decoration: none; }
+.btn:hover { background: var(--accent-soft); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+.btn.small { padding: 4px 10px; font-size: 0.85rem; border-width: 1.5px; }
+
+/* Fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label, .qlabel { font-weight: 600; }
+.hint { font-size: 0.88rem; color: var(--muted); }
+textarea, input[type="text"], select.in {
+  font: 400 1rem/1.55 var(--font-body); color: var(--ink); background: var(--paper);
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 4.2em; }
+textarea:focus, input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.tablewrap { overflow-x: auto; border: 1.5px solid var(--line); border-radius: 10px; }
+table.grid { border-collapse: collapse; width: 100%; min-width: 560px; }
+table.grid th { text-align: left; font: 600 0.78rem var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--paper); padding: 10px; border-bottom: 1.5px solid var(--line); vertical-align: bottom; }
+table.grid td { padding: 8px; border-top: 1px solid var(--line); vertical-align: top; }
+table.grid td.rowh { font-weight: 600; width: 22%; padding-top: 14px; }
+table.grid td.num { font: 700 1rem var(--font-mono); width: 3rem; text-align: center; padding-top: 14px; }
+table.grid textarea { min-height: 3.2em; background: var(--surface); }
+table.grid select { width: 100%; }
+
+.callout { border: 1.5px solid var(--line); border-left-width: 6px; border-radius: 8px; padding: 14px 16px; background: var(--paper); display: flex; flex-direction: column; gap: 6px; }
+.callout.key { border-left-color: var(--accent); }
+.callout.watch { border-left-color: var(--warn); }
+.callout h3 { font-size: 1rem; }
+.callout ul { margin: 0; padding-left: 1.2em; }
+.vocab { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.vocab div { border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); }
+.vocab b { display: block; font-family: var(--font-display); font-size: 1.05rem; }
+mark { background: var(--hi); color: inherit; padding: 0 2px; border-radius: 2px; }
+.tag { display: inline-block; font: 700 0.7rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.tag.p { color: var(--phys); background: var(--accent-soft); }
+.tag.c { color: var(--chem); background: var(--chem-soft); }
+
+.big-q { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.25rem, 2.6vw, 1.6rem); line-height: 1.25; padding: 18px 20px; border: 2px solid var(--ink); border-radius: 10px; background: var(--hi); color: var(--ink); max-width: 46ch; }
+.three-q { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; counter-reset: q; }
+.three-q div { counter-increment: q; border: 1.5px dashed var(--accent); border-radius: 8px; padding: 10px 12px; font-weight: 500; }
+.three-q div::before { content: "Q" counter(q); display: block; font: 700 0.72rem var(--font-mono); color: var(--accent); }
+
+/* P/C quiz */
+.pc { display: grid; gap: 8px; }
+.pcrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; border: 1.5px solid var(--line); border-radius: 8px; }
+.pcrow span.t { flex: 1 1 180px; font-weight: 500; }
+.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); color: var(--ink); padding: 6px 14px; font-weight: 600; }
+.seg button + button { border-left: 1.5px solid var(--line); }
+.seg button[aria-pressed="true"][data-v="P"] { background: var(--phys); color: var(--surface); }
+.seg button[aria-pressed="true"][data-v="C"] { background: var(--chem); color: var(--surface); }
+.fb { font-size: 0.88rem; min-width: 8rem; }
+.fb.good { color: var(--ok); } .fb.bad { color: var(--warn); }
+
+/* Roles, rules */
+.cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.role { border: 1.5px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.role h3 { font-size: 1.1rem; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.rules li { border: 2px solid var(--ink); border-radius: 8px; padding: 10px 14px; font-weight: 600; background: var(--paper); }
+
+/* Case menu */
+.cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.case { border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px 12px; align-items: start; background: var(--surface); }
+.case.ours { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.case h3 { font-size: 1.05rem; }
+.case p { font-size: 0.9rem; color: var(--muted); }
+.case .rank { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.case .rank .seg button { padding: 3px 12px; font-family: var(--font-mono); }
+.case .rank .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.choice { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border: 2px solid var(--ink); border-radius: 10px; background: var(--paper); }
+.choice select { width: auto; min-width: 0; max-width: 100%; }
+
+/* Case brief */
+.brief-head { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.brief-head .tile { width: 84px; height: 84px; }
+.brief-head .tile .s { font-size: 2.1rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; padding: 4px 12px; font: 500 0.88rem var(--font-body); }
+.chip:hover { background: var(--accent-soft); }
+.sites { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.sites a { display: flex; flex-direction: column; gap: 2px; border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px; text-decoration: none; color: var(--ink); }
+.sites a:hover { border-color: var(--accent); }
+.sites a small { color: var(--muted); }
+ol.qs { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+
+/* Drawing */
+.draw2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.pad { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pad h3 { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.pad canvas { width: 100%; max-width: 100%; aspect-ratio: 3 / 2; background: #FFFFFF; border: 2px solid var(--ink); border-radius: 8px; touch-action: none; cursor: crosshair; display: block; }
+.tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tools button { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 4px 10px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; }
+.tools button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.sw { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.35); display: inline-block; }
+
+/* Checklist */
+.checklist { display: grid; gap: 8px; }
+.checklist label { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; cursor: pointer; }
+.checklist input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+.checklist label:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); }
+
+.starters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); }
+.cer-block { border: 1.5px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.cer-block .lbl { font: 800 1.2rem var(--font-display); }
+.cer-block.c .lbl { color: var(--accent); }
+.cer-block.e .lbl { color: var(--chem); }
+.cer-block.r .lbl { color: var(--warn); }
+.selfcheck { display: grid; gap: 4px; font-size: 0.9rem; }
+.selfcheck div::before { content: "\25CB  "; color: var(--muted); }
+.selfcheck div.ok::before { content: "\25CF  "; color: var(--ok); }
+
+.rubric td { font-size: 0.9rem; }
+.rubric td label { display: flex; gap: 6px; align-items: flex-start; cursor: pointer; }
+.rubric td input { accent-color: var(--accent); margin-top: 4px; }
+
+.mass-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.mass-opts label { display: flex; gap: 8px; align-items: center; border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 500; }
+.mass-opts label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.mass-opts input { accent-color: var(--accent); }
+
+/* Summary */
+.sum { display: flex; flex-direction: column; gap: 18px; }
+.sum section { border-top: 2px dashed var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.sum dl { margin: 0; display: grid; gap: 8px; }
+.sum dt { font-weight: 600; font-size: 0.9rem; color: var(--muted); }
+.sum dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sum .empty { color: var(--muted); font-style: italic; }
+.sum img { border: 1.5px solid var(--line); border-radius: 6px; width: 100%; max-width: 340px; background: #FFFFFF; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 18px; border-radius: 8px; font-weight: 500; z-index: 10; max-width: calc(100% - 32px); }
+.saved { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  nav.side { position: static; max-height: none; display: flex; gap: 6px; overflow-x: auto; padding: 8px; }
+  nav.side .navday, nav.side .progress { display: none; }
+  nav.side a { flex: none; white-space: nowrap; border: 1.5px solid var(--line); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+@media print {
+  body { background: #FFFFFF; }
+  nav.side, .pager, .mast .idcard, .actions, .tools { display: none !important; }
+  .app { display: block; }
+  .sheet { border: 0; padding: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">
+    <div class="brand">
+      <div class="tile" aria-hidden="true"><span class="n">5</span><span class="s">Ml</span><span class="w">Matter</span></div>
+      <div>
+        <div class="eyebrow">5th Grade Science · Properties of Matter</div>
+        <h1>Matter Launch Case Files</h1>
+      </div>
+    </div>
+    <div class="idcard" aria-label="My case file">
+      <label for="f_name">Name<input class="nm" id="f_name" type="text" data-save autocomplete="off" placeholder="First and last name"></label>
+      <label for="f_trio">Trio<select class="tr" id="f_trio" data-save><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+      <label for="f_case_top">Our case<select id="f_case_top"></select></label>
+    </div>
+  </div>
+
+  <div class="app">
+    <nav class="side" id="nav" aria-label="Project sections"></nav>
+    <main>
+      <article class="sheet" id="page" aria-live="polite"></article>
+      <div class="pager" id="pager"></div>
+      <p class="saved" id="saved"></p>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* ---------- Storage ---------- */
+var KEY = "matter-launch-case-files-v1";
+var state = { f: {}, d: {} };
+try { var raw = localStorage.getItem(KEY); if (raw) { var p = JSON.parse(raw); if (p && p.f) state = { f: p.f || {}, d: p.d || {} }; } } catch (e) {}
+var saveTimer = null;
+function persist() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function () {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); setSaved("Saved on this device at " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })); }
+    catch (e) { setSaved("This browser is not saving. Use “My Case File” to copy your work before you leave."); }
+    updateProgress();
+  }, 250);
+}
+function setSaved(t) { var el = document.getElementById("saved"); if (el) el.textContent = t; }
+function get(id) { return state.f[id] == null ? "" : state.f[id]; }
+function set(id, v) { state.f[id] = v; persist(); }
+
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function toast(msg) {
+  var t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2600);
+}
+var framed = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+
+/* ---------- Case data ---------- */
+var CASES = [
+  { id: "chocolate", n: 1, s: "Ch", name: "Chocolate", mystery: "A chocolate bar left in a hot car turns soft and gooey. Put it in the fridge and it hardens again.",
+    qs: ["What is chocolate made from? What is cocoa butter?", "What happens to chocolate as it warms up? What happens as it cools?", "After it hardens again, does it still look, taste, and act like chocolate?", "Can the change be undone? How do you know?"],
+    kw: ["chocolate melting", "cocoa butter", "melting point of chocolate", "chocolate tempering"] },
+  { id: "candle", n: 2, s: "Cd", name: "Candle", mystery: "A candle burns for hours and slowly gets shorter. Where does the wax go?",
+    qs: ["What is candle wax made of?", "What happens to the wax near the flame? What happens to the wax inside the flame?", "What does a flame need from the air to keep burning?", "What comes out of a burning candle? Can you see all of it?"],
+    kw: ["how a candle burns", "candle wax", "combustion for kids", "candle flame science"] },
+  { id: "icecream", n: 3, s: "Ic", name: "Ice Cream", mystery: "A bag of sweet liquid is packed in ice and salt and shaken. A few minutes later it is ice cream.",
+    qs: ["What is in the ice cream mix?", "Why do people add salt to the ice around the bag?", "What state does the mix start in, and what state does it end in?", "If the ice cream melts, what do you get back?"],
+    kw: ["homemade ice cream in a bag", "why salt melts ice", "freezing point", "ice cream science"] },
+  { id: "bread", n: 4, s: "Br", name: "Bread", mystery: "A lump of dough rises, then bakes into something new.",
+    qs: ["What does yeast do in the dough?", "What makes the dough rise? What are the bubbles made of?", "What changes in the oven (texture, color, smell, crust)?", "Can bread ever turn back into dough?"],
+    kw: ["how yeast makes bread rise", "baking bread science", "why bread crust is brown", "yeast carbon dioxide"] },
+  { id: "rust", n: 5, s: "Fe", name: "Rusting Iron", mystery: "A shiny iron nail slowly turns into flaky orange-brown material.",
+    qs: ["What does iron need around it to rust?", "How are the properties of rust different from the properties of iron?", "Does a rusty nail weigh more or less than the shiny nail? Why?", "How do people keep iron from rusting?"],
+    kw: ["how rust forms", "iron oxide", "rusting iron nail", "what is rust"] },
+  { id: "aluminum", n: 6, s: "Al", name: "Aluminum Recycling", mystery: "An empty soda can goes into the recycling bin and comes back as a brand-new can.",
+    qs: ["What happens to cans at a recycling plant?", "How hot does it have to get to melt aluminum?", "Is the new can still aluminum? How do you know?", "Why does recycling aluminum save so much energy?"],
+    kw: ["aluminum can recycling", "how aluminum is recycled", "melting aluminum", "properties of aluminum"] },
+  { id: "caramel", n: 7, s: "Cm", name: "Caramel", mystery: "Sugar melts, then something new happens if it keeps heating.",
+    qs: ["What happens to sugar crystals when they first melt?", "What changes if the sugar keeps heating (color, smell, taste)?", "Could you turn caramel back into white sugar crystals?", "Does anything escape into the air while caramel cooks?"],
+    kw: ["caramelization", "melting sugar", "how caramel is made", "what happens when sugar is heated"] },
+  { id: "egg", n: 8, s: "Eg", name: "Egg", mystery: "A runny, see-through egg white turns solid and white in a hot pan.",
+    qs: ["What is egg white made of? What are proteins?", "What does heat do to the egg white?", "List the properties before cooking and after cooking.", "Can you “uncook” an egg? Why or why not?"],
+    kw: ["why egg whites turn white", "cooking eggs science", "egg proteins heat", "egg white properties"] },
+  { id: "seasalt", n: 9, s: "Ss", name: "Sea Salt", mystery: "Seawater sits in shallow ponds under the sun. Weeks later, workers rake up piles of salt.",
+    qs: ["What is seawater a mixture of?", "Where does the water go?", "Is the salt left behind still salt? How could you check?", "Could you put the salt back into water? What would happen?"],
+    kw: ["how sea salt is made", "salt evaporation ponds", "evaporation", "separating mixtures"] },
+  { id: "dryice", n: 10, s: "Di", name: "Dry Ice", mystery: "A block of dry ice makes spooky fog and shrinks away to nothing, without ever making a puddle.",
+    qs: ["What is dry ice made of?", "How cold is dry ice?", "What is sublimation?", "What is the white fog really made of?"],
+    kw: ["what is dry ice", "sublimation", "dry ice fog", "carbon dioxide solid"] },
+  { id: "concrete", n: 11, s: "Cn", name: "Concrete", mystery: "A wet, sloppy mix hardens into stone, even underwater.",
+    qs: ["What is concrete made from? What is cement?", "What does cement do when it is mixed with water?", "Is hardening the same thing as drying? How do you know?", "Can hard concrete turn back into powder and water?"],
+    kw: ["how concrete hardens", "cement and water", "concrete science", "why concrete hardens underwater"] },
+  { id: "fireworks", n: 12, s: "Fw", name: "Fireworks", mystery: "Colorful explosions light up the night sky.",
+    qs: ["What is packed inside a firework?", "What makes the different colors?", "What does a firework make when it goes off (light, heat, sound, smoke)?", "Where does all the matter go after the explosion?"],
+    kw: ["how fireworks work", "firework colors metals", "fireworks chemistry", "what is gunpowder"] },
+  { id: "glowsticks", n: 13, s: "Gs", name: "Glow Sticks", mystery: "Snap it, shake it, and a plastic stick starts to glow.",
+    qs: ["What is inside a glow stick before you snap it?", "What happens to the materials when you snap and shake it?", "Where does the light come from? Why does it stop glowing?", "Does a glow stick glow longer in the cold or the heat? Why?"],
+    kw: ["how glow sticks work", "chemiluminescence", "glow stick chemistry", "light from chemicals"] }
+];
+function caseById(id) { for (var i = 0; i < CASES.length; i++) if (CASES[i].id === id) return CASES[i]; return null; }
+function tileHTML(c, cls) { return '<div class="tile' + (cls ? " " + cls : "") + '" aria-hidden="true"><span class="n">' + c.n + '</span><span class="s">' + c.s + '</span><span class="w">' + esc(c.name) + "</span></div>"; }
+
+/* ---------- Field helpers (return HTML) ---------- */
+function ta(id, label, opts) {
+  opts = opts || {};
+  return '<div class="field">' + (label ? '<label for="' + id + '">' + label + "</label>" : "") +
+    (opts.hint ? '<p class="hint">' + opts.hint + "</p>" : "") +
+    '<textarea id="' + id + '" data-save data-label="' + esc(opts.sumLabel || stripTags(label)) + '" rows="' + (opts.rows || 3) + '"' + (opts.ph ? ' placeholder="' + esc(opts.ph) + '"' : "") + "></textarea></div>";
+}
+function cellTA(id, label, rows) { return '<textarea id="' + id + '" data-save data-label="' + esc(label) + '" rows="' + (rows || 2) + '" aria-label="' + esc(label) + '"></textarea>'; }
+function stripTags(s) { return String(s || "").replace(/<[^>]+>/g, ""); }
+function starters(list) { return '<div class="starters"><span>Sentence starters:</span>' + list.map(function (s) { return '<button type="button" class="chip" data-starter="' + esc(s) + '">' + esc(s) + "</button>"; }).join("") + "</div>"; }
+var THREE_Q = '<div class="three-q"><div>What were the properties before?</div><div>What are they after?</div><div>Is it still the same substance? What is your evidence?</div></div>';
+
+/* ---------- Sections ---------- */
+var S = [];
+function sec(day, id, title, render) { S.push({ day: day, id: id, title: title, render: render }); }
+
+sec("Start here", "mission", "Your Mission", function () {
+  return '<header><span class="eyebrow">Start here</span><h2>Your Mission</h2></header>' +
+  '<div class="prose"><p>Every day, matter changes: chocolate melts, bread bakes, iron rusts. Material scientists ask, <b>“What really happened to the matter?”</b> They look at properties, think about particles, and use evidence to decide whether a change made a new substance.</p>' +
+  '<p>Your trio will investigate one real-world case by reading and researching. You will tell the whole story of how the matter changes, decide whether each change is <span class="tag p">physical</span> or <span class="tag c">chemical</span>, show what the particles are doing, and explain what happens to the mass.</p></div>' +
+  '<div class="field"><span class="eyebrow">Our big question</span><p class="big-q">How can we use properties and evidence to tell what happens to matter when it changes?</p></div>' +
+  '<h3>Project map</h3><div class="tablewrap"><table class="grid"><thead><tr><th>Day</th><th>What we do</th><th>What I finish</th></tr></thead><tbody>' +
+  [["Day 1", "Launch: read about matter and change, form trios, choose a case", "Reading questions, roles, case choice"],
+   ["Day 2", "Research Part 1: meet your material and its properties", "Case brief, Organizer 1, Source Log"],
+   ["Day 3", "Research Part 2: the change story, particles, and mass", "Organizers 2, 3, and 4"],
+   ["Day 4", "Argue and create: write your CER and make your Case File", "CER page and final product"],
+   ["Day 5", "Share: gallery walk and reflection", "Feedback page and reflection"],
+   ["Days 6–8", "Be the Material Scientist (only if your teacher says so)", "Design plan and justification"]]
+  .map(function (r) { return "<tr><td class=\"rowh\">" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td></tr>"; }).join("") +
+  "</tbody></table></div>" +
+  '<div class="callout key"><h3>How this website works</h3><ul>' +
+  "<li>Type your name, trio, and case at the top. Everything you type saves on <b>this device</b> automatically.</li>" +
+  "<li>Each day, use the left menu to find that day’s pages. A filled dot means a page is finished.</li>" +
+  "<li>No homework. All project work happens in class. Take your time and do it well.</li>" +
+  "<li>Before you finish each day, write in your <b>Project Log</b>. On the last day, open <b>My Case File</b> to turn in your work.</li></ul></div>";
+});
+
+sec("Day 1 · Launch", "reading", "Two Kinds of Change", function () {
+  var items = [["q2a", "crushing chalk"], ["q2b", "burning a match"], ["q2c", "dissolving sugar in water"], ["q2d", "a bike chain rusting"]];
+  return '<header><span class="eyebrow">Day 1 · Read together</span><h2>Two Kinds of Change</h2></header>' +
+  '<div class="prose"><p><b>Matter</b> is anything that takes up space and has mass. Every substance has its own <b>properties</b>, such as its state (solid, liquid, or gas), color, hardness, melting point, and whether it dissolves in water. Properties help us identify a substance, just like we did with the unknown powders.</p>' +
+  "<p>When matter changes, scientists ask one big question: <mark>Is it still the same substance?</mark></p>" +
+  '<p>In a <span class="tag p">physical change</span>, matter changes its size, shape, or state, but it is still the same substance with the same properties. Ice melting into water and sugar dissolving in water are physical changes. Many physical changes can be reversed.</p>' +
+  '<p>In a <span class="tag c">chemical change</span>, one or more new substances form, and the new substances have different properties from the starting ones. Baking batter into pancakes and iron turning into rust are chemical changes. Chemical changes are usually hard or impossible to reverse.</p>' +
+  "<p>Clues like bubbles, color change, heat, or light can suggest a chemical change, but <b>clues are not proof</b>. The strongest evidence is that the new material has different properties than the old one.</p>" +
+  "<p>Finally, scientists have found that matter is <b>conserved</b>: it is not created or destroyed in these changes. If you count everything, including gases that float away or join in from the air, the total mass stays the same.</p></div>" +
+  '<div class="field"><span class="eyebrow">Key vocabulary</span><div class="vocab">' +
+  [["Property", "Something we can observe or measure about a substance."], ["Substance", "A single kind of matter with its own set of properties."], ["Physical change", "The substance stays the same."], ["Chemical change", "A new substance forms."], ["Conserved", "The total amount stays the same."]]
+  .map(function (v) { return "<div><b>" + v[0] + "</b>" + v[1] + "</div>"; }).join("") + "</div></div>" +
+  "<h3>Check your understanding</h3>" +
+  ta("q1", "1. A friend says, “When ice melts, a new substance forms.” Do you agree? Use properties as evidence.", { rows: 3, sumLabel: "Q1: Ice melting" }) +
+  '<div class="field"><span class="qlabel">2. Label each change as P (physical) or C (chemical).</span><div class="pc">' +
+  items.map(function (it) {
+    return '<div class="pcrow"><span class="t">' + it[1] + '</span><span class="seg" role="group" aria-label="' + it[1] + '" data-seg="' + it[0] + '" data-label="Q2: ' + it[1] + '"><button type="button" data-v="P">P</button><button type="button" data-v="C">C</button></span><span class="fb" id="fb_' + it[0] + '"></span></div>';
+  }).join("") + '</div><div><button type="button" class="btn small" id="checkq2">Check my answers</button></div></div>' +
+  ta("q3", "3. A log gets much lighter after it burns in a fireplace. Does that mean matter disappeared? Explain.", { rows: 3, sumLabel: "Q3: Burning log" });
+});
+
+sec("Day 1 · Launch", "trio", "Our Trio", function () {
+  var roles = [["Materials Manager", "Gets the devices, books, and supplies. Returns everything."], ["Recorder", "Writes the team’s final answers on the shared organizer. Checks that all voices are included."], ["Reporter", "Shares out when the teacher or class asks. Reads the source details aloud."]];
+  return '<header><span class="eyebrow">Day 1 · Form your trio</span><h2>Our Trio and Our Case</h2></header>' +
+  '<div class="cards3">' + roles.map(function (r, i) {
+    return '<div class="role"><h3>' + r[0] + '</h3><p class="hint">' + r[1] + '</p><input type="text" id="role' + i + '" data-save data-label="' + r[0] + '" placeholder="Name" aria-label="' + r[0] + ' name"></div>';
+  }).join("") + "</div>" +
+  '<h3>Our four rules for talking about ideas</h3><ul class="rules"><li>Critique ideas, not people.</li><li>Be specific.</li><li>Offer specific suggestions.</li><li>Focus on evidence and reasoning.</li></ul>' +
+  '<div class="callout key"><p>Everyone does their own research and writing. Your trio helps each other think, find sources, and check facts.</p></div>';
+});
+
+sec("Day 1 · Launch", "cases", "Choose Your Case", function () {
+  return '<header><span class="eyebrow">Day 1 · Case menu</span><h2>Choose Your Case</h2><p class="lede">Read the menu. As a trio, rank your top three choices. Your teacher will make sure every trio gets a different case.</p></header>' +
+  '<div class="cases">' + CASES.map(function (c) {
+    return '<div class="case" data-case="' + c.id + '">' + tileHTML(c) + "<div><h3>" + esc(c.name) + "</h3><p>" + esc(c.mystery) + '</p></div><div class="rank"><span>Our rank:</span><span class="seg" role="group" aria-label="Rank for ' + esc(c.name) + '" data-rank="' + c.id + '"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button></span></div></div>';
+  }).join("") + "</div>" +
+  '<div class="choice"><label for="f_case"><b>Our case (after your teacher says OK):</b></label><select class="in" id="f_case"></select></div>';
+});
+
+sec("Day 2 · Research Part 1", "brief", "Case Brief", function () {
+  var c = caseById(get("f_case"));
+  if (!c) return '<header><span class="eyebrow">Day 2 · Before you research</span><h2>Case Brief</h2></header><div class="callout watch"><h3>Pick your case first</h3><p>Choose your trio’s case at the top of the page or on <a href="#cases">Choose Your Case</a>. Your case brief will appear here.</p></div>';
+  var sites = [
+    ["https://school.eb.com/", "Britannica School", "Use your school login"],
+    ["https://kids.britannica.com/", "Britannica Kids", "Encyclopedia for students"],
+    ["https://kids.nationalgeographic.com/", "National Geographic Kids", "Articles, photos, videos"],
+    ["https://www.exploratorium.edu/", "Exploratorium", "San Francisco science museum"]
+  ];
+  return '<header><span class="eyebrow">Day 2 · Before you research</span><div class="brief-head">' + tileHTML(c) + "<div><h2>Case Brief: " + esc(c.name) + '</h2><p class="lede">' + esc(c.mystery) + "</p></div></div></header>" +
+  "<h3>Questions to research</h3><p class=\"hint\">These questions guide your reading. Your answers go in the organizers, in your own words.</p><ol class=\"qs\">" + c.qs.map(function (q) { return "<li>" + esc(q) + "</li>"; }).join("") + "</ol>" +
+  '<div class="field"><h3>Search words to try</h3><p class="hint">Tap a search word to copy it, then paste it into an approved site’s search box.</p><div class="chips">' + c.kw.map(function (k) { return '<button type="button" class="chip" data-copy="' + esc(k) + '">' + esc(k) + "</button>"; }).join("") + "</div></div>" +
+  '<div class="field"><h3>Where to look</h3><p class="hint">Stay on sites your teacher approves. If the internet is down, use classroom or library books.</p><div class="sites">' + sites.map(function (s) { return '<a href="' + s[0] + '" target="_blank" rel="noopener">' + s[1] + "<small>" + s[2] + "</small></a>"; }).join("") + "</div></div>" +
+  "<h3>Every scientist asks three questions</h3>" + THREE_Q +
+  '<div class="callout watch"><h3>Watch out for these traps</h3><ul><li>“A color change always means a chemical change.” Clues are not proof. Look for new properties.</li><li>“Burned things lose matter.” The matter becomes gases that float away.</li><li>Copying is not research. Read, close the page, then write it in your own words.</li></ul></div>';
+});
+
+sec("Day 2 · Research Part 1", "org1", "Organizer 1: Meet the Material", function () {
+  var props = [["state", "State (solid, liquid, gas)"], ["color", "Color"], ["texture", "Texture or hardness"], ["other", "Other (smell, shape, melting point, dissolves?)"]];
+  return '<header><span class="eyebrow">Day 2 · Organizer 1</span><h2>Meet the Material</h2><p class="lede">Use at least two sources. Write facts in your own words and put the source number from your Source Log next to each fact, like this: <b>(Source 2)</b>.</p></header>' +
+  ta("o1_what", "What is it? Where do we see it or use it? What is it made from?", { rows: 5 }) +
+  '<h3>Property chart</h3><p class="hint">Fill in what you learn about the material BEFORE and AFTER the main change in your case. If it does not change, write “same.”</p>' +
+  '<div class="tablewrap"><table class="grid"><thead><tr><th>Property</th><th>Before the change</th><th>After the change</th></tr></thead><tbody>' +
+  props.map(function (p) { return '<tr><td class="rowh">' + p[1] + "</td><td>" + cellTA("pc_" + p[0] + "_b", p[1] + " (before)") + "</td><td>" + cellTA("pc_" + p[0] + "_a", p[1] + " (after)") + "</td></tr>"; }).join("") +
+  "</tbody></table></div>" +
+  '<h3>Other interesting facts</h3><div class="tablewrap"><table class="grid"><thead><tr><th>Fact</th><th>Source #</th></tr></thead><tbody>' +
+  [1, 2].map(function (i) { return "<tr><td>" + cellTA("fact" + i, "Interesting fact " + i) + '</td><td style="width:7rem"><input type="text" id="fact' + i + '_src" data-save data-label="Fact ' + i + ' source #" aria-label="Source number for fact ' + i + '"></td></tr>'; }).join("") +
+  "</tbody></table></div>";
+});
+
+sec("Day 2 · Research Part 1", "sources", "Source Log", function () {
+  return '<header><span class="eyebrow">Day 2 · Source Log</span><h2>Source Log</h2><p class="lede">Keep track of where your information comes from. Good scientists always say how they know something. Start with at least two sources today.</p></header>' +
+  '<div class="tablewrap"><table class="grid"><thead><tr><th>#</th><th>Title or website</th><th>Author or group</th><th>One useful fact I learned</th><th>Trustworthy?</th></tr></thead><tbody>' +
+  [1, 2, 3, 4].map(function (i) {
+    return '<tr><td class="num">' + i + "</td><td>" + cellTA("src" + i + "_t", "Source " + i + " title or website") + "</td><td>" + cellTA("src" + i + "_a", "Source " + i + " author or group") + "</td><td>" + cellTA("src" + i + "_f", "Source " + i + " useful fact") + '</td><td style="width:8rem"><select class="in" id="src' + i + '_y" data-save data-label="Source ' + i + ' trustworthy?" aria-label="Is source ' + i + ' trustworthy?"><option value="">—</option><option>Yes</option><option>No</option><option>Not sure</option></select></td></tr>';
+  }).join("") + "</tbody></table></div>" +
+  '<div class="callout key"><h3>How to tell if a source is trustworthy</h3><ul><li>It is written by an expert, a museum, a university, a science group, or a trusted encyclopedia.</li><li>It gives facts that other sources also agree with.</li><li>It is not trying to sell you something or make you laugh.</li><li>If two sources disagree, keep both and note it. That is what scientists do!</li></ul></div>' +
+  '<p class="hint">Ideas for where to look (ask your teacher which are approved): Britannica School, National Geographic Kids, library books, and science museum sites.</p>';
+});
+
+sec("Day 3 · Research Part 2", "org2", "Organizer 2: The Change Story", function () {
+  return '<header><span class="eyebrow">Day 3 · Organizer 2</span><h2>The Change Story</h2><p class="lede">Tell the story of what happens to the matter from start to finish. Break it into steps. For each step, decide if it is a physical or chemical change and give the evidence.</p></header>' +
+  '<div class="tablewrap"><table class="grid"><thead><tr><th>Step</th><th>What happens to the matter?</th><th>Physical or chemical?</th><th>Evidence: What properties changed? Can it be reversed? Is it a new substance?</th></tr></thead><tbody>' +
+  [1, 2, 3, 4].map(function (i) {
+    return '<tr><td class="num">' + i + "</td><td>" + cellTA("st" + i + "_w", "Step " + i + ": what happens", 3) + '</td><td style="width:9.5rem"><select class="in" id="st' + i + '_pc" data-save data-label="Step ' + i + ': physical or chemical" aria-label="Step ' + i + ' physical or chemical"><option value="">—</option><option>Physical</option><option>Chemical</option></select></td><td>' + cellTA("st" + i + "_e", "Step " + i + ": evidence", 3) + "</td></tr>";
+  }).join("") + "</tbody></table></div>" +
+  ta("o2_most", "Which step is the MOST important change in your case? Why?", { rows: 3 }) +
+  "<h3>Stuck? Ask the three questions</h3>" + THREE_Q;
+});
+
+sec("Day 3 · Research Part 2", "org3", "Organizer 3: Particle Model", function () {
+  return '<header><span class="eyebrow">Day 3 · Organizer 3</span><h2>Particle Model</h2><p class="lede">Everything is made of particles that are too small to see. Draw what the particles are doing in the most important change in your case.</p></header>' +
+  '<div class="callout key"><h3>How to draw</h3><ul><li>Pick a particle color and tap the box to place particles. Use one color for each kind of substance.</li><li>Use the pen to draw arrows or wiggle lines that show motion.</li><li>Solid: packed close. Liquid: close but jumbled. Gas: far apart.</li></ul></div>' +
+  '<div class="draw2">' + padHTML("pm_before", "Before: draw the particles") + padHTML("pm_after", "After: draw the particles") + "</div>" +
+  ta("o3_diff", "Explain what is different about the particles. Did they stay the same kind of particle, or did new kinds form?", { hint: "Use the words “particles,” “arranged,” and “substance.”", rows: 4 }) +
+  ta("o3_new", "Did your change create a new substance? How do the particles show that?", { rows: 3 });
+});
+
+sec("Day 3 · Research Part 2", "org4", "Organizer 4: What Happens to the Mass?", function () {
+  var opts = ["get bigger", "get smaller", "stay the same"];
+  return '<header><span class="eyebrow">Day 3 · Organizer 4</span><h2>What Happens to the Mass?</h2><p class="lede">Imagine you could weigh EVERYTHING in your case before and after the change, including gases.</p></header>' +
+  '<div class="field"><span class="qlabel">I predict the total mass will…</span><div class="mass-opts" role="radiogroup" aria-label="Mass prediction">' +
+  opts.map(function (o, i) { return '<label><input type="radio" name="mass_pred" id="mp' + i + '" value="' + o + '" data-radio="mass_pred"> ' + o + "</label>"; }).join("") + "</div></div>" +
+  ta("o4_because", "Because…", { rows: 2, sumLabel: "My prediction, because" }) +
+  ta("o4_research", "What did your research say about what happens to the mass in your case?", { rows: 3 }) +
+  ta("o4_where", "Where does all the matter go (or where does extra matter come from)?", { hint: "Think about gases and the air.", rows: 3 }) +
+  ta("o4_connect", "How does this connect to what we learned in class about weight and states of matter?", { rows: 3 });
+});
+
+sec("Day 4 · Argue and create", "cer", "Claim, Evidence, Reasoning", function () {
+  return '<header><span class="eyebrow">Day 4 · Write on your own (15 minutes)</span><h2>Claim, Evidence, Reasoning</h2><p class="lede">This is the same skill you used with the unknown powders: compare properties and use evidence to decide what happened.</p></header>' +
+  '<p class="big-q">Is the most important change in your case a physical change or a chemical change?</p>' +
+  '<div class="cer-block c"><span class="lbl">Claim</span><p class="hint">Answer the question in one or two sentences. Your case may have both kinds. Pick the main change and say which.</p>' + cellTA("cer_c", "Claim", 3) + starters(["The ___ changes when ___. This is a ___ change."]) + "</div>" +
+  '<div class="cer-block e"><span class="lbl">Evidence</span><p class="hint">Give at least two facts from your research about the properties before and after. Include the source number.</p>' + cellTA("cer_e", "Evidence", 5) + starters(["According to Source ___, ", "Before, it was ___. After, it was ___."]) + "</div>" +
+  '<div class="cer-block r"><span class="lbl">Reasoning</span><p class="hint">Explain WHY the evidence proves your claim. Did a new substance form? Could it be reversed? What do the particles show?</p>' + cellTA("cer_r", "Reasoning", 5) + starters(["This shows a ___ change because ", "If it were a different kind of change, we would expect "]) + "</div>" +
+  '<div class="callout key"><h3>Self-check</h3><div class="selfcheck" id="selfcheck"></div></div>';
+});
+
+sec("Day 4 · Argue and create", "product", "Final Product Planner", function () {
+  var items = ["A title and the names of your trio", "Meet the material: what it is, where it is used, and the property chart (before and after)", "The change story: the steps, with each one labeled physical or chemical and the evidence", "Particle model: a clear before and after drawing with an explanation", "Mass: what happens to the total mass and why (where does the matter go?)", "Our argument: your CER (claim, evidence, reasoning)", "Sources: at least two, listed at the bottom or on the last slide", "One “Wow!” fact that surprised you"];
+  return '<header><span class="eyebrow">Day 4 · Trio work</span><h2>Final Product Planner</h2><p class="lede">Choose one: a poster or a 5-slide presentation. Your Case File must include everything on this checklist.</p></header>' +
+  '<div class="field"><label for="prod_type">We are making a…</label><select class="in" id="prod_type" data-save data-label="Product type" style="max-width:16rem"><option value="">—</option><option>Poster</option><option>5-slide presentation</option></select></div>' +
+  '<div class="checklist">' + items.map(function (t, i) { return '<label><input type="checkbox" id="pp' + i + '" data-save data-label="' + esc(t) + '"><span>' + t + "</span></label>"; }).join("") + "</div>" +
+  ta("wow", "Our “Wow!” fact", { rows: 2 }) +
+  '<h3>If you choose slides, plan them here</h3><div class="tablewrap"><table class="grid"><thead><tr><th>Slide</th><th>What goes on it</th><th>Our plan</th></tr></thead><tbody>' +
+  ["Title, trio names, picture of the material", "Meet the material and property chart", "The change story (physical or chemical?)", "Particle model and mass", "Our argument (CER) and sources"]
+  .map(function (t, i) { return '<tr><td class="num">' + (i + 1) + '</td><td style="width:34%">' + t + "</td><td>" + cellTA("sl" + (i + 1), "Slide " + (i + 1) + " plan") + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+  '<div class="callout key"><h3>Make it your own</h3><p>Use your own words and your own drawings. Check the spelling of science words. Make sure someone from another trio can understand it without you standing next to it!</p></div>';
+});
+
+sec("Day 5 · Share", "gallery", "Gallery Walk and Reflection", function () {
+  return '<header><span class="eyebrow">Day 5 · Gallery walk</span><h2>Glow and Grow</h2><p class="lede">Visit at least three Case Files. Use our four rules: critique ideas not people, be specific, give specific suggestions, and focus on evidence.</p></header>' +
+  '<div class="tablewrap"><table class="grid"><thead><tr><th>Case I visited</th><th>Glow: something specific that was strong (and why)</th><th>Grow: a specific suggestion to make it better</th><th>Something I learned</th></tr></thead><tbody>' +
+  [1, 2, 3].map(function (i) {
+    return '<tr><td style="width:12rem"><select class="in" id="gw' + i + '_case" data-save data-label="Gallery stop ' + i + ': case" aria-label="Case visited ' + i + '"><option value="">—</option>' + CASES.map(function (c) { return "<option>" + esc(c.name) + "</option>"; }).join("") + "</select></td><td>" + cellTA("gw" + i + "_g", "Stop " + i + " Glow", 3) + "</td><td>" + cellTA("gw" + i + "_r", "Stop " + i + " Grow", 3) + "</td><td>" + cellTA("gw" + i + "_l", "Stop " + i + " learned", 3) + "</td></tr>";
+  }).join("") + "</tbody></table></div>" +
+  "<h3>My reflection</h3>" +
+  ta("ref1", "What was the most interesting thing I learned about matter changing?", { rows: 3 }) +
+  ta("ref2", "What was hard about this project? How did I work through it?", { rows: 3 }) +
+  ta("ref3", "What is one thing our trio did well together?", { rows: 3 });
+});
+
+sec("Day 5 · Share", "rubric", "How Your Work Is Reviewed", function () {
+  var rows = [
+    ["Properties and change story", "Accurate property chart and a complete step-by-step story with physical or chemical labeled and justified", "Accurate chart and story with changes labeled", "Some properties or steps missing or mislabeled", "Missing or mostly incorrect"],
+    ["Particles and mass", "Clear particle drawing that explains the change; explains where all the matter goes", "Particle drawing and mass explanation are mostly correct", "Drawing or explanation is unclear or has errors", "Missing"],
+    ["Claim, evidence, reasoning", "Strong claim, 2+ specific facts with sources, reasoning uses properties and a new-substance idea", "Clear claim, 2 facts, some reasoning", "Weak evidence or reasoning", "Missing parts"],
+    ["Research and sources", "2+ trustworthy sources, facts in own words, log complete", "2 sources, mostly own words", "1 source or copied wording", "No sources"],
+    ["Teamwork and effort", "Uses the four rules, stays focused every day, helps others", "Works well most days", "Needs reminders to stay on task", "Rarely participates"]
+  ];
+  return '<header><span class="eyebrow">Rubric</span><h2>How Your Work Will Be Reviewed</h2><p class="lede">Effort and thinking matter as much as the final product. Pick the box that best describes your work right now. This is your self-check; your teacher makes the final call.</p></header>' +
+  '<div class="tablewrap"><table class="grid rubric"><thead><tr><th></th><th>4: Expert</th><th>3: Proficient</th><th>2: Developing</th><th>1: Beginning</th></tr></thead><tbody>' +
+  rows.map(function (r, i) {
+    return '<tr><td class="rowh">' + r[0] + "</td>" + [1, 2, 3, 4].map(function (k) {
+      return '<td><label><input type="radio" name="rb' + i + '" value="' + (5 - k) + '" data-radio="rb' + i + '" data-label="Self-score: ' + esc(r[0]) + '"><span>' + r[k] + "</span></label></td>";
+    }).join("") + "</tr>";
+  }).join("") + "</tbody></table></div>";
+});
+
+sec("Days 6–8 · Optional", "design", "Be the Material Scientist: Plan", function () {
+  return '<header><span class="eyebrow">Days 6 and 7 · Only if your teacher says so</span><h2>Be the Material Scientist: Plan</h2><p class="lede">Now you are the one choosing materials! Pick a job for a product and use properties to decide which material is best.</p></header>' +
+  ta("ds_prod", "What product are we designing? What job does it do?", { hint: "Example: a lunch box that keeps chocolate from melting.", rows: 2 }) +
+  ta("ds_props", "What properties does the material need to have? List at least three and explain why.", { rows: 4 }) +
+  '<h3>Compare three candidate materials</h3><div class="tablewrap"><table class="grid"><thead><tr><th>Candidate material</th><th>Key properties</th><th>Good for the job because…</th><th>Not good because…</th></tr></thead><tbody>' +
+  [1, 2, 3].map(function (i) { return "<tr><td>" + cellTA("cm" + i + "_n", "Material " + i) + "</td><td>" + cellTA("cm" + i + "_p", "Material " + i + " key properties") + "</td><td>" + cellTA("cm" + i + "_g", "Material " + i + " good because") + "</td><td>" + cellTA("cm" + i + "_b", "Material " + i + " not good because") + "</td></tr>"; }).join("") +
+  "</tbody></table></div>" +
+  "<h3>Sketch your product</h3><p class=\"hint\">Draw your product and label which material is used for each part.</p>" +
+  '<div class="draw2">' + padHTML("ds_sketch", "Product sketch", true) + "</div>" +
+  ta("ds_labels", "Labels: which material is used where?", { rows: 3 });
+});
+
+sec("Days 6–8 · Optional", "justify", "Be the Material Scientist: Justify", function () {
+  return '<header><span class="eyebrow">Day 8 · Justify and share</span><h2>Be the Material Scientist: Justify</h2></header>' +
+  '<div class="cer-block c"><span class="lbl">Claim</span><p class="hint">Which material is best for the job?</p>' + cellTA("dj_c", "Design claim", 2) + "</div>" +
+  '<div class="cer-block e"><span class="lbl">Evidence</span><p class="hint">What properties of the material prove it is a good choice? Use facts from your research.</p>' + cellTA("dj_e", "Design evidence", 4) + "</div>" +
+  '<div class="cer-block r"><span class="lbl">Reasoning</span><p class="hint">Explain why those properties matter for the job. Could a physical or chemical change cause a problem? Could it melt, rust, or burn?</p>' + cellTA("dj_r", "Design reasoning", 4) + "</div>" +
+  ta("dj_test", "What would you change if you could test your design?", { rows: 3 }) +
+  '<div class="callout key"><p>Share with another trio using the four rules: critique ideas not people, be specific, offer specific suggestions, focus on evidence.</p></div>';
+});
+
+sec("Every day", "log", "My Project Log", function () {
+  return '<header><span class="eyebrow">Every day · Last 2 minutes</span><h2>My Project Log</h2><p class="lede">Fill this out at the end of each work session. It helps you remember where you left off!</p></header>' +
+  '<div class="tablewrap"><table class="grid"><thead><tr><th>Day</th><th>Today I worked on (and what I figured out)</th><th>Tomorrow I will</th></tr></thead><tbody>' +
+  [1, 2, 3, 4, 5, 6, 7, 8].map(function (d) { return '<tr><td class="num">' + d + "</td><td>" + cellTA("log" + d + "_t", "Day " + d + ": today I worked on") + "</td><td>" + cellTA("log" + d + "_n", "Day " + d + ": tomorrow I will") + "</td></tr>"; }).join("") +
+  "</tbody></table></div>";
+});
+
+sec("Every day", "casefile", "My Case File", function () {
+  return '<header><span class="eyebrow">Turn it in</span><h2>My Case File</h2><p class="lede">Everything you have written, in one place. Use it to build your poster or slides, and to turn in your work the way your teacher asks.</p></header>' +
+  '<div class="actions"><button type="button" class="btn primary" id="copyAll">Copy all my work</button>' +
+  (framed ? "" : '<button type="button" class="btn" id="printAll">Print</button><button type="button" class="btn" id="dlBackup">Save a backup file</button>') +
+  '<label class="btn" for="loadBackup" style="cursor:pointer">Load a backup file</label><input type="file" id="loadBackup" accept=".json,application/json" hidden></div>' +
+  '<p class="hint">Sharing a computer? Your work only saves on this device. Save a backup file (or copy your work into a doc) at the end of each day so you can pick up anywhere.</p>' +
+  '<div class="sum" id="summary"></div>' +
+  '<div class="callout watch"><h3>Start over</h3><p>This erases everything on this device. Copy or save a backup first.</p><div class="actions"><button type="button" class="btn small" id="resetArm">Erase my work…</button><button type="button" class="btn small" id="resetGo" hidden>Yes, erase everything</button></div></div>';
+});
+
+/* ---------- Drawing pads ---------- */
+var PCOLORS = [["#1C7ED6", "Blue"], ["#E8590C", "Orange"], ["#2F9E44", "Green"], ["#AE3EC9", "Purple"]];
+function padHTML(id, title, sketch) {
+  var tools = sketch
+    ? '<button type="button" data-tool="pen" aria-pressed="true">Pen</button><button type="button" data-tool="particle" data-color="#1C7ED6"><span class="sw" style="background:#1C7ED6"></span>Dot</button>'
+    : PCOLORS.map(function (c, i) { return '<button type="button" data-tool="particle" data-color="' + c[0] + '"' + (i === 0 ? ' aria-pressed="true"' : "") + '><span class="sw" style="background:' + c[0] + '"></span>' + c[1] + "</button>"; }).join("") + '<button type="button" data-tool="pen">Pen</button>';
+  return '<div class="pad" data-pad="' + id + '"><h3>' + title + '</h3><div class="tools">' + tools +
+    '<button type="button" data-act="undo">Undo</button><button type="button" data-act="clear">Clear</button></div>' +
+    '<canvas width="600" height="400" aria-label="' + esc(title) + ' drawing area" data-label="' + esc(title) + '"></canvas></div>';
+}
+function drawShapes(ctx, shapes) {
+  ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, 600, 400);
+  (shapes || []).forEach(function (s) {
+    if (s.t === "p") {
+      ctx.beginPath(); ctx.arc(s.x, s.y, 13, 0, Math.PI * 2); ctx.fillStyle = s.c; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x - 4, s.y - 4, 3.5, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fill();
+    } else if (s.t === "l" && s.pts.length) {
+      ctx.beginPath(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 3.5; ctx.strokeStyle = "#13213A";
+      ctx.moveTo(s.pts[0][0], s.pts[0][1]);
+      for (var i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i][0], s.pts[i][1]);
+      if (s.pts.length === 1) ctx.lineTo(s.pts[0][0] + 0.1, s.pts[0][1]);
+      ctx.stroke();
+    }
+  });
+}
+function initPad(el) {
+  var id = el.getAttribute("data-pad"), cv = el.querySelector("canvas"), ctx = cv.getContext("2d");
+  var shapes = state.d[id] || [];
+  var tool = el.querySelector('[data-tool][aria-pressed="true"]');
+  var cur = { tool: tool.getAttribute("data-tool"), color: tool.getAttribute("data-color") };
+  var drawing = null;
+  function redraw() { drawShapes(ctx, shapes); }
+  function commit() { state.d[id] = shapes; persist(); }
+  function pos(e) { var r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * 600 / r.width), Math.round((e.clientY - r.top) * 400 / r.height)]; }
+  redraw();
+  el.querySelectorAll("[data-tool]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      el.querySelectorAll("[data-tool]").forEach(function (o) { o.setAttribute("aria-pressed", "false"); });
+      b.setAttribute("aria-pressed", "true"); cur = { tool: b.getAttribute("data-tool"), color: b.getAttribute("data-color") };
+    });
+  });
+  el.querySelector('[data-act="undo"]').addEventListener("click", function () { shapes.pop(); redraw(); commit(); });
+  var clr = el.querySelector('[data-act="clear"]');
+  clr.addEventListener("click", function () {
+    if (clr.getAttribute("data-armed")) { shapes = []; redraw(); commit(); clr.textContent = "Clear"; clr.removeAttribute("data-armed"); }
+    else { clr.textContent = "Tap again to clear"; clr.setAttribute("data-armed", "1"); setTimeout(function () { clr.textContent = "Clear"; clr.removeAttribute("data-armed"); }, 2500); }
+  });
+  cv.addEventListener("pointerdown", function (e) {
+    e.preventDefault(); var p = pos(e);
+    if (cur.tool === "particle") { shapes.push({ t: "p", x: p[0], y: p[1], c: cur.color }); redraw(); commit(); }
+    else { drawing = { t: "l", pts: [p] }; shapes.push(drawing); cv.setPointerCapture(e.pointerId); redraw(); }
+  });
+  cv.addEventListener("pointermove", function (e) { if (!drawing) return; drawing.pts.push(pos(e)); redraw(); });
+  function end() { if (drawing) { drawing = null; commit(); } }
+  cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+}
+function padImage(id) {
+  var shapes = state.d[id]; if (!shapes || !shapes.length) return "";
+  var c = document.createElement("canvas"); c.width = 600; c.height = 400; drawShapes(c.getContext("2d"), shapes);
+  try { return c.toDataURL("image/png"); } catch (e) { return ""; }
+}
+
+/* ---------- Wiring ---------- */
+function caseOptions(sel) {
+  sel.innerHTML = '<option value="">Choose…</option>' + CASES.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + "</option>"; }).join("");
+  sel.value = get("f_case");
+}
+function bindFields(root) {
+  root.querySelectorAll("[data-save]").forEach(function (el) {
+    if (el.type === "checkbox") { el.checked = get(el.id) === true; el.addEventListener("change", function () { set(el.id, el.checked); }); }
+    else { el.value = get(el.id); el.addEventListener("input", function () { set(el.id, el.value); if (el.id === "o1_what" || /^cer_/.test(el.id)) selfCheck(); }); }
+  });
+  root.querySelectorAll("[data-radio]").forEach(function (el) {
+    var k = el.getAttribute("data-radio"); el.checked = get(k) === el.value;
+    el.addEventListener("change", function () { if (el.checked) set(k, el.value); });
+  });
+  root.querySelectorAll("[data-seg]").forEach(function (g) {
+    var k = g.getAttribute("data-seg");
+    function paint() { g.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(get(k) === b.getAttribute("data-v"))); }); }
+    g.querySelectorAll("button").forEach(function (b) { b.addEventListener("click", function () { set(k, b.getAttribute("data-v")); paint(); var fb = document.getElementById("fb_" + k); if (fb) { fb.textContent = ""; fb.className = "fb"; } }); });
+    paint();
+  });
+  root.querySelectorAll("[data-rank]").forEach(function (g) {
+    var cid = g.getAttribute("data-rank");
+    g.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var v = b.getAttribute("data-v"), k = "rank_" + v, was = get(k) === cid;
+        ["1", "2", "3"].forEach(function (r) { if (get("rank_" + r) === cid) state.f["rank_" + r] = ""; });
+        set(k, was ? "" : cid); paintRanks();
+      });
+    });
+  });
+  root.querySelectorAll("[data-starter]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var tx = b.closest(".cer-block").querySelector("textarea"), s = b.getAttribute("data-starter");
+      tx.value = (tx.value && !/\s$/.test(tx.value) ? tx.value + " " : tx.value) + s; tx.focus();
+      set(tx.id, tx.value); selfCheck();
+    });
+  });
+  root.querySelectorAll("[data-copy]").forEach(function (b) {
+    b.addEventListener("click", function () { copyText(b.getAttribute("data-copy"), "Copied “" + b.getAttribute("data-copy") + "”"); });
+  });
+  root.querySelectorAll("[data-pad]").forEach(initPad);
+  var q2 = root.querySelector("#checkq2");
+  if (q2) q2.addEventListener("click", function () {
+    var key = { q2a: "P", q2b: "C", q2c: "P", q2d: "C" }, right = 0;
+    Object.keys(key).forEach(function (k) {
+      var fb = document.getElementById("fb_" + k), v = get(k);
+      if (!v) { fb.textContent = "Pick P or C"; fb.className = "fb bad"; }
+      else if (v === key[k]) { fb.textContent = "Yes!"; fb.className = "fb good"; right++; }
+      else { fb.textContent = "Look again: is it still the same substance?"; fb.className = "fb bad"; }
+    });
+    toast(right + " of 4 correct");
+  });
+  var fc = root.querySelector("#f_case");
+  if (fc) { caseOptions(fc); fc.addEventListener("change", function () { setCase(fc.value); }); }
+}
+function paintRanks() {
+  document.querySelectorAll("[data-rank]").forEach(function (g) {
+    var cid = g.getAttribute("data-rank");
+    g.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(get("rank_" + b.getAttribute("data-v")) === cid)); });
+  });
+  document.querySelectorAll(".case").forEach(function (c) { c.classList.toggle("ours", c.getAttribute("data-case") === get("f_case")); });
+}
+function setCase(v) {
+  set("f_case", v);
+  ["f_case", "f_case_top"].forEach(function (id) { var s = document.getElementById(id); if (s) s.value = v; });
+  paintRanks(); updateProgress();
+}
+function selfCheck() {
+  var box = document.getElementById("selfcheck"); if (!box) return;
+  var c = get("cer_c"), e = get("cer_e"), r = get("cer_r");
+  var checks = [
+    [/physical|chemical/i.test(c), "My claim says “physical” or “chemical.”"],
+    [/source\s*#?\s*\d/i.test(e), "My evidence names a source number."],
+    [/before/i.test(e) && /after/i.test(e), "My evidence compares before and after."],
+    [/because/i.test(r), "My reasoning explains with “because.”"],
+    [/substance/i.test(r), "My reasoning says whether a new substance formed."],
+    [/particle/i.test(r), "My reasoning mentions particles."]
+  ];
+  box.innerHTML = checks.map(function (k) { return '<div class="' + (k[0] ? "ok" : "") + '">' + k[1] + "</div>"; }).join("");
+}
+
+/* ---------- Progress ---------- */
+var sectionFields = {};
+function measure() {
+  var tmp = document.createElement("div");
+  S.forEach(function (s) {
+    if (s.id === "mission" || s.id === "casefile" || s.id === "brief") { sectionFields[s.id] = null; return; }
+    tmp.innerHTML = s.render();
+    var ids = [];
+    tmp.querySelectorAll("[data-save]").forEach(function (el) { ids.push(el.id); });
+    tmp.querySelectorAll("[data-radio]").forEach(function (el) { var k = el.getAttribute("data-radio"); if (ids.indexOf(k) < 0) ids.push(k); });
+    tmp.querySelectorAll("[data-seg]").forEach(function (el) { ids.push(el.getAttribute("data-seg")); });
+    tmp.querySelectorAll("[data-pad]").forEach(function (el) { ids.push("pad:" + el.getAttribute("data-pad")); });
+    if (s.id === "cases") ids = ["rank_1", "rank_2", "rank_3", "f_case"];
+    sectionFields[s.id] = ids;
+  });
+}
+function filled(id) {
+  if (id.indexOf("pad:") === 0) { var d = state.d[id.slice(4)]; return !!(d && d.length); }
+  var v = get(id); return v === true || (typeof v === "string" && v.trim() !== "");
+}
+function sectionStatus(id) {
+  var ids = sectionFields[id]; if (!ids || !ids.length) return null;
+  var n = ids.filter(filled).length; return { n: n, of: ids.length };
+}
+function updateProgress() {
+  var tot = 0, done = 0;
+  S.forEach(function (s) {
+    if (s.day.indexOf("Optional") >= 0) return;
+    var st = sectionStatus(s.id); if (!st) return; tot += st.of; done += st.n;
+  });
+  var pct = tot ? Math.round(done * 100 / tot) : 0;
+  var pr = document.getElementById("prog"); if (pr) pr.innerHTML = "Days 1–5: " + pct + "% filled in<div class=\"bar\"><i style=\"width:" + pct + '%"></i></div>';
+  document.querySelectorAll("nav.side a").forEach(function (a) {
+    var st = sectionStatus(a.getAttribute("data-id")), dot = a.querySelector(".dot");
+    if (!dot) return;
+    dot.className = "dot" + (st ? (st.n >= st.of ? " done" : st.n > 0 ? " some" : "") : "");
+  });
+}
+
+/* ---------- Nav + routing ---------- */
+function buildNav() {
+  var nav = document.getElementById("nav"), last = "", h = '<div class="progress" id="prog"></div>';
+  S.forEach(function (s) {
+    if (s.day !== last) { h += '<div class="navday">' + s.day + "</div>"; last = s.day; }
+    h += '<a href="#' + s.id + '" data-id="' + s.id + '"><span class="dot" aria-hidden="true"></span><span>' + s.title + "</span></a>";
+  });
+  nav.innerHTML = h;
+}
+function show(id) {
+  var idx = 0; for (var i = 0; i < S.length; i++) if (S[i].id === id) idx = i;
+  var s = S[idx], page = document.getElementById("page");
+  page.innerHTML = s.render();
+  bindFields(page); paintRanks(); selfCheck();
+  if (s.id === "casefile") renderSummary();
+  document.querySelectorAll("nav.side a").forEach(function (a) {
+    if (a.getAttribute("data-id") === s.id) { a.setAttribute("aria-current", "page"); if (a.scrollIntoView && window.innerWidth <= 860) a.scrollIntoView({ block: "nearest", inline: "center" }); }
+    else a.removeAttribute("aria-current");
+  });
+  var prev = S[idx - 1], next = S[idx + 1], pg = document.getElementById("pager");
+  pg.innerHTML = (prev ? '<a class="btn" href="#' + prev.id + '">← ' + prev.title + "</a>" : "<span></span>") + (next ? '<a class="btn primary" href="#' + next.id + '">' + next.title + " →</a>" : "");
+  try { localStorage.setItem(KEY + ":page", s.id); } catch (e) {}
+  updateProgress();
+}
+function route() {
+  var h = (location.hash || "").slice(1);
+  if (!h) { try { h = localStorage.getItem(KEY + ":page") || "mission"; } catch (e) { h = "mission"; } }
+  show(h); window.scrollTo(0, 0);
+}
+
+/* ---------- Summary, copy, backup ---------- */
+function collect() {
+  var tmp = document.createElement("div"), out = [];
+  S.forEach(function (s) {
+    if (s.id === "mission" || s.id === "casefile" || s.id === "brief") return;
+    tmp.innerHTML = s.render();
+    var rows = [], seen = {};
+    tmp.querySelectorAll("[data-save], [data-radio], [data-seg], canvas").forEach(function (el) {
+      if (el.tagName === "CANVAS") { var pid = el.closest("[data-pad]").getAttribute("data-pad"); rows.push({ label: el.getAttribute("data-label"), img: pid }); return; }
+      var k = el.hasAttribute("data-radio") ? el.getAttribute("data-radio") : el.hasAttribute("data-seg") ? el.getAttribute("data-seg") : el.id;
+      if (seen[k]) return; seen[k] = 1;
+      var v = get(k), label = el.getAttribute("data-label") || k;
+      if (k === "mass_pred") label = "I predict the total mass will…";
+      if (el.type === "checkbox") v = v === true ? "Done" : "";
+      if (/^rb\d$/.test(k) && v) v = v + " out of 4";
+      if (k === "f_case") { var cc = caseById(v); v = cc ? cc.name : ""; label = "Our case"; }
+      if (/^rank_/.test(k)) { var rc = caseById(v); v = rc ? rc.name : ""; }
+      rows.push({ label: label, value: typeof v === "string" ? v : "" });
+    });
+    if (s.id === "cases") rows = [{ label: "Choice 1", value: (caseById(get("rank_1")) || {}).name || "" }, { label: "Choice 2", value: (caseById(get("rank_2")) || {}).name || "" }, { label: "Choice 3", value: (caseById(get("rank_3")) || {}).name || "" }, { label: "Our case", value: (caseById(get("f_case")) || {}).name || "" }];
+    out.push({ id: s.id, title: s.title, day: s.day, rows: rows });
+  });
+  return out;
+}
+function header() { var c = caseById(get("f_case")); return { name: get("f_name") || "(no name yet)", trio: get("f_trio") || "?", kase: c ? c.name : "(not chosen yet)" }; }
+function renderSummary() {
+  var box = document.getElementById("summary"), h = header(), html = '<div><span class="eyebrow">Case File</span><h3>' + esc(h.name) + " · Trio " + esc(h.trio) + " · " + esc(h.kase) + "</h3></div>";
+  collect().forEach(function (sec) {
+    var any = sec.rows.some(function (r) { return r.img ? (state.d[r.img] || []).length : r.value && r.value.trim(); });
+    html += '<section><span class="eyebrow">' + esc(sec.day) + "</span><h3>" + esc(sec.title) + "</h3>";
+    if (!any) { html += '<p class="empty">Nothing here yet.</p></section>'; return; }
+    html += "<dl>" + sec.rows.filter(function (r) { return r.img ? (state.d[r.img] || []).length : r.value && r.value.trim(); }).map(function (r) {
+      if (r.img) { var src = padImage(r.img); return "<dt>" + esc(r.label) + "</dt><dd>" + (src ? '<img alt="' + esc(r.label) + '" src="' + src + '">' : "") + "</dd>"; }
+      return "<dt>" + esc(r.label) + "</dt><dd>" + esc(r.value) + "</dd>";
+    }).join("") + "</dl></section>";
+  });
+  box.innerHTML = html;
+  document.getElementById("copyAll").addEventListener("click", function () { copyText(asText(), "Copied! Paste it into a doc or wherever your teacher asks."); });
+  var pr = document.getElementById("printAll"); if (pr) pr.addEventListener("click", function () { window.print(); });
+  var dl = document.getElementById("dlBackup"); if (dl) dl.addEventListener("click", downloadBackup);
+  document.getElementById("loadBackup").addEventListener("change", loadBackup);
+  var arm = document.getElementById("resetArm"), go = document.getElementById("resetGo");
+  arm.addEventListener("click", function () { go.hidden = !go.hidden; arm.textContent = go.hidden ? "Erase my work…" : "Cancel"; });
+  go.addEventListener("click", function () { state = { f: {}, d: {} }; try { localStorage.removeItem(KEY); } catch (e) {} document.querySelectorAll("#f_name, #f_trio").forEach(function (el) { el.value = ""; }); setCase(""); route(); toast("Erased. Fresh start!"); });
+}
+function asText() {
+  var h = header(), lines = ["MATTER LAUNCH CASE FILE", "Name: " + h.name, "Trio: " + h.trio, "Case: " + h.kase, ""];
+  collect().forEach(function (sec) {
+    lines.push("== " + sec.title.toUpperCase() + " (" + sec.day + ") ==");
+    var n = 0;
+    sec.rows.forEach(function (r) {
+      if (r.img) { if ((state.d[r.img] || []).length) { lines.push(r.label + ": [drawing — see the website]"); n++; } return; }
+      if (r.value && r.value.trim()) { lines.push(r.label + ": " + r.value.trim()); n++; }
+    });
+    if (!n) lines.push("(nothing yet)");
+    lines.push("");
+  });
+  return lines.join("\n");
+}
+function copyText(t, msg) {
+  function fallback() {
+    var a = document.createElement("textarea"); a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0"; document.body.appendChild(a); a.select();
+    var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} a.remove(); toast(ok ? msg : "Could not copy. Select the text and copy it by hand.");
+  }
+  try { navigator.clipboard.writeText(t).then(function () { toast(msg); }, fallback); } catch (e) { fallback(); }
+}
+function downloadBackup() {
+  var h = header(), blob = new Blob([JSON.stringify({ app: "matter-launch", saved: new Date().toISOString(), state: state }, null, 1)], { type: "application/json" });
+  var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "case-file-" + (h.name.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "student") + ".json";
+  document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function loadBackup(e) {
+  var file = e.target.files && e.target.files[0]; if (!file) return;
+  var r = new FileReader();
+  r.onload = function () {
+    try { var p = JSON.parse(r.result); if (!p || p.app !== "matter-launch" || !p.state || !p.state.f) throw 0; state = { f: p.state.f, d: p.state.d || {} }; persist(); syncTop(); route(); toast("Backup loaded."); }
+    catch (err) { toast("That file is not a Case File backup. Pick the .json file you saved from this site."); }
+  };
+  r.readAsText(file);
+}
+
+/* ---------- Boot ---------- */
+function syncTop() {
+  var n = document.getElementById("f_name"), t = document.getElementById("f_trio"), c = document.getElementById("f_case_top");
+  n.value = get("f_name"); t.value = get("f_trio"); caseOptions(c);
+}
+(function initTop() {
+  var n = document.getElementById("f_name"), t = document.getElementById("f_trio"), c = document.getElementById("f_case_top");
+  syncTop();
+  n.addEventListener("input", function () { set("f_name", n.value); });
+  t.addEventListener("change", function () { set("f_trio", t.value); });
+  c.addEventListener("change", function () { setCase(c.value); if (location.hash === "#brief") route(); });
+})();
+measure(); buildNav();
+window.addEventListener("hashchange", route);
+route();
+})();
+</script>
+</body>
+</html>
